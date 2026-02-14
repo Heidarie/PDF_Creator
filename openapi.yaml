@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: PDF Creator Service
+  version: 1.0.0
+  description: |-
+    A single-endpoint service that renders PDFs from HTML sent in JSON.
+servers:
+  - url: http://localhost:8080
+paths:
+  /render:
+    post:
+      summary: Render HTML to PDF
+      description: Returns a PDF generated from the provided HTML.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+            examples:
+              basic:
+                summary: Basic HTML
+                value:
+                  html: "<h1>Hello</h1><p>PDF from HTML</p>"
+                  name: "hello"
+                  size: "A4"
+                  orientation: "portrait"
+                  margin:
+                    top: 0.4
+                    right: 0.4
+                    bottom: 0.4
+                    left: 0.4
+      responses:
+        '200':
+          description: PDF rendered successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Unsupported media type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Rendering failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    RenderRequest:
+      type: object
+      required:
+        - html
+      additionalProperties: false
+      properties:
+        html:
+          type: string
+          description: HTML content to render.
+        name:
+          type: string
+          description: Optional filename (".pdf" is appended if missing).
+        size:
+          type: string
+          description: Paper size (case-insensitive).
+          enum: [A3, A4, A5, Letter, Legal]
+        orientation:
+          type: string
+          enum: [portrait, landscape]
+        margin:
+          type: object
+          description: Margins in inches.
+          additionalProperties: false
+          properties:
+            top:
+              type: number
+              format: double
+            right:
+              type: number
+              format: double
+            bottom:
+              type: number
+              format: double
+            left:
+              type: number
+              format: double
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
