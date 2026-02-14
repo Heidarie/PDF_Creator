@@ -61,12 +61,6 @@ docker run --rm -p 8080:8080 pdf-service
 docker compose up --build
 ```
 
-To start the optional Redis container:
-
-```bash
-docker compose --profile infra up --build
-```
-
 ## Security Notes
 
 - The renderer blocks all external network requests (`http`, `https`, `file`, `ws`, etc.), preventing SSRF-style access from untrusted HTML.
