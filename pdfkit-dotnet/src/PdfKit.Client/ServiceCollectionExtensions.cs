@@ -28,9 +28,9 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        services.AddTransient<IPdfClient>(_ =>
+        services.AddTransient<IPdfClient>(sp =>
         {
-            var factory = _.GetRequiredService<IHttpClientFactory>();
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
             var httpClient = factory.CreateClient(PdfClientOptions.HttpClientName);
             var jsonOptions = options.JsonOptions ?? new JsonSerializerOptions
             {
