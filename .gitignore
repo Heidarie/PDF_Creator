@@ -2,7 +2,12 @@
 .gomodcache/
 .golangci-cache/
 /bin/
+**/bin/
+**/obj/
+.vs/
 outputs/
 assets/
 *.pdf
 .DS_Store
+/pdfkit-dotnet/.idea
+pdfkit-dotnet/Folder.DotSettings.user
