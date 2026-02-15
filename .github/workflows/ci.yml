@@ -31,6 +31,13 @@ jobs:
           cd pdfkit
           go test ./...
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
       - name: Test .NET client/builders
         run: |
           dotnet test pdfkit-dotnet/tests/PdfKit.Client.Tests/PdfKit.Client.Tests.csproj
