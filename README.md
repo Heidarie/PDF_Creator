@@ -78,3 +78,7 @@ Environment variables:
 - `RENDER_TIMEOUT` (default `20s`)
 - `CHROME_PATH` (default `/usr/bin/chromium` inside Docker)
 - `CHROME_NO_SANDBOX` (default `false`) — set to `true` only if Chromium fails to start in your container
+
+## Client Module
+
+There is a separate Go module with HTML builders and a client for this service in `pdfkit/`.

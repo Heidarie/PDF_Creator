@@ -1,5 +1,8 @@
 .gocache/
 .gomodcache/
+.golangci-cache/
 /bin/
+outputs/
+assets/
 *.pdf
 .DS_Store
