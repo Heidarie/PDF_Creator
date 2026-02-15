@@ -3,18 +3,19 @@ namespace PdfKit.Builders;
 public sealed record RoadmapLane(string Label, string BarText, int WidthPercent, string? Color);
 public sealed record Roadmap(string? Title, IReadOnlyList<string> Quarters, IReadOnlyList<RoadmapLane> Lanes);
 
+internal sealed record RoadmapLaneView(string Label, string BarText, int WidthPercent, string Color);
+
 public static class RoadmapBuilder
 {
     public static Task<string> BuildAsync(Roadmap roadmap)
     {
         var quarters = roadmap.Quarters?.Count > 0 ? roadmap.Quarters : new[] { "Q1", "Q2", "Q3", "Q4" };
-        var lanes = roadmap.Lanes?.Select(lane => new
-        {
+        var lanes = roadmap.Lanes?.Select(lane => new RoadmapLaneView(
             lane.Label,
             lane.BarText,
             lane.WidthPercent,
-            Color = string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
-        }).ToList() ?? new List<object>();
+            string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
+        )).ToList() ?? new List<RoadmapLaneView>();
 
         var model = new
         {
