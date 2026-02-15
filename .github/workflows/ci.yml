@@ -33,8 +33,8 @@ jobs:
 
       - name: Test .NET client/builders
         run: |
-          cd pdfkit-dotnet
-          dotnet test
+          dotnet test pdfkit-dotnet/tests/PdfKit.Client.Tests/PdfKit.Client.Tests.csproj
+          dotnet test pdfkit-dotnet/tests/PdfKit.Builders.Tests/PdfKit.Builders.Tests.csproj
 
       - name: Integration tests (Docker)
         run: bash scripts/integration-test.sh
