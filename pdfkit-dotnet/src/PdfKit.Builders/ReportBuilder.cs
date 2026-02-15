@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace PdfKit.Builders;
 
 public sealed record KPI(string Label, string Value, int Percent);
@@ -12,29 +14,16 @@ public sealed record Report(
     string? AppendixHtml
 );
 
-public sealed record ReportModel(
-    string Title,
-    string Summary,
-    IReadOnlyList<KPI> KPIs,
-    IReadOnlyList<ReportPage> Pages,
-    string? AppendixTitle,
-    string AppendixHtml
-);
-
 public static class ReportBuilder
 {
     public static Task<string> BuildAsync(Report report)
     {
-        var model = new ReportModel(
-            string.IsNullOrWhiteSpace(report.Title) ? "Report" : report.Title,
-            report.SummaryHtml ?? string.Empty,
-            report.KPIs ?? Array.Empty<KPI>(),
-            report.Pages ?? Array.Empty<ReportPage>(),
-            report.AppendixTitle,
-            report.AppendixHtml ?? string.Empty
-        );
+        var title = string.IsNullOrWhiteSpace(report.Title) ? "Report" : report.Title;
+        var kpis = report.KPIs ?? Array.Empty<KPI>();
+        var pages = report.Pages ?? Array.Empty<ReportPage>();
 
-        const string template = @"<!doctype html>
+        var sb = new StringBuilder();
+        sb.Append(@"<!doctype html>
 <html>
 <head>
 <meta charset=""utf-8"">
@@ -51,56 +40,57 @@ h1{margin-top:0}
 </head>
 <body>
 <div class=""page"">
-  <h1>@Model.Title</h1>
-  @if (Model.KPIs.Count > 0)
-  {
-    <div class=""kpi"">
-      @foreach (var kpi in Model.KPIs)
-      {
-        <div class=""card"">
-          <strong>@kpi.Label</strong>
-          <div>@kpi.Value</div>
-          <div class=""bar""><span style=""width:@kpi.Percent%""></span></div>
-        </div>
-      }
-    </div>
-  }
-  @if (!string.IsNullOrWhiteSpace(Model.Summary))
-  {
-      <div class=""section"">@Raw(Model.Summary)</div>
-  }
-</div>
+  <h1>").Append(title).Append(@"</h1>
+");
+        if (kpis.Count > 0)
+        {
+            sb.Append("  <div class=\"kpi\">\n");
+            foreach (var kpi in kpis)
+            {
+                sb.Append("    <div class=\"card\">\n");
+                sb.Append("      <strong>").Append(kpi.Label).Append("</strong>\n");
+                sb.Append("      <div>").Append(kpi.Value).Append("</div>\n");
+                sb.Append("      <div class=\"bar\"><span style=\"width:").Append(kpi.Percent).Append("%\"></span></div>\n");
+                sb.Append("    </div>\n");
+            }
+            sb.Append("  </div>\n");
+        }
+        if (!string.IsNullOrWhiteSpace(report.SummaryHtml))
+        {
+            sb.Append("  <div class=\"section\">").Append(report.SummaryHtml).Append("</div>\n");
+        }
+        sb.Append("</div>\n");
 
-@foreach (var page in Model.Pages)
-{
-<div class=""page"">
-  @if (!string.IsNullOrWhiteSpace(page.Title))
-  {
-      <h1>@page.Title</h1>
-  }
-  @if (!string.IsNullOrWhiteSpace(page.BodyHtml))
-  {
-      <div class=""section"">@Raw(page.BodyHtml)</div>
-  }
-</div>
-}
+        foreach (var page in pages)
+        {
+            sb.Append("\n<div class=\"page\">\n");
+            if (!string.IsNullOrWhiteSpace(page.Title))
+            {
+                sb.Append("  <h1>").Append(page.Title).Append("</h1>\n");
+            }
+            if (!string.IsNullOrWhiteSpace(page.BodyHtml))
+            {
+                sb.Append("  <div class=\"section\">").Append(page.BodyHtml).Append("</div>\n");
+            }
+            sb.Append("</div>\n");
+        }
 
-@if (!string.IsNullOrWhiteSpace(Model.AppendixTitle) || !string.IsNullOrWhiteSpace(Model.AppendixHtml))
-{
-<div>
-  @if (!string.IsNullOrWhiteSpace(Model.AppendixTitle))
-  {
-      <h1>@Model.AppendixTitle</h1>
-  }
-  @if (!string.IsNullOrWhiteSpace(Model.AppendixHtml))
-  {
-      <div class=""section"">@Raw(Model.AppendixHtml)</div>
-  }
-</div>
-}
-</body>
-</html>";
+        if (!string.IsNullOrWhiteSpace(report.AppendixTitle) || !string.IsNullOrWhiteSpace(report.AppendixHtml))
+        {
+            sb.Append("\n<div>\n");
+            if (!string.IsNullOrWhiteSpace(report.AppendixTitle))
+            {
+                sb.Append("  <h1>").Append(report.AppendixTitle).Append("</h1>\n");
+            }
+            if (!string.IsNullOrWhiteSpace(report.AppendixHtml))
+            {
+                sb.Append("  <div class=\"section\">").Append(report.AppendixHtml).Append("</div>\n");
+            }
+            sb.Append("</div>\n");
+        }
+        sb.Append(@"</body>
+</html>");
 
-        return TemplateRenderer.RenderAsync("report", template, model);
+        return Task.FromResult(sb.ToString());
     }
 }

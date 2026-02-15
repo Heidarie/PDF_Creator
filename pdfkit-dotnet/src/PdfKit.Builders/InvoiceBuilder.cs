@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 
 namespace PdfKit.Builders;
 
@@ -14,47 +15,16 @@ public sealed record Invoice(
     string? Notes
 );
 
-public sealed record SimpleInvoiceLine(string Description, string Qty, string Unit, string Total);
-
-public sealed record InvoiceModel(
-    string Title,
-    string? Number,
-    string? Date,
-    string? Customer,
-    string? Notes,
-    IReadOnlyList<SimpleInvoiceLine> Lines,
-    string Subtotal
-);
-
 public static class InvoiceBuilder
 {
     public static Task<string> BuildAsync(Invoice invoice)
     {
         var currency = string.IsNullOrWhiteSpace(invoice.CurrencySymbol) ? "$" : invoice.CurrencySymbol;
-        var lines = invoice.Items.Select(item =>
-        {
-            var total = item.Total ?? item.UnitPrice * item.Quantity;
-            return new SimpleInvoiceLine(
-                item.Description,
-                FormatQuantity(item.Quantity),
-                FormatMoney(currency, item.UnitPrice),
-                FormatMoney(currency, total)
-            );
-        }).ToList();
-
+        var title = string.IsNullOrWhiteSpace(invoice.Title) ? "Invoice" : invoice.Title;
         var subtotal = invoice.Items.Sum(item => item.Total ?? item.UnitPrice * item.Quantity);
 
-        var model = new InvoiceModel(
-            string.IsNullOrWhiteSpace(invoice.Title) ? "Invoice" : invoice.Title,
-            invoice.Number,
-            invoice.Date,
-            invoice.Customer,
-            invoice.Notes,
-            lines,
-            FormatMoney(currency, subtotal)
-        );
-
-        const string template = @"<!doctype html>
+        var sb = new StringBuilder();
+        sb.Append(@"<!doctype html>
 <html>
 <head>
 <meta charset=""utf-8"">
@@ -75,22 +45,24 @@ th{background:#f6f6f6}
 <div class=""page"">
   <div class=""header"">
     <div>
-      <h1 class=""title"">@Model.Title</h1>
-      @if (!string.IsNullOrWhiteSpace(Model.Customer))
-      {
-          <div class=""meta"">Customer: @Model.Customer</div>
-      }
-    </div>
+      <h1 class=""title"">").Append(title).Append(@"</h1>
+");
+        if (!string.IsNullOrWhiteSpace(invoice.Customer))
+        {
+            sb.Append("      <div class=\"meta\">Customer: ").Append(invoice.Customer).Append("</div>\n");
+        }
+        sb.Append(@"    </div>
     <div class=""meta"">
-      @if (!string.IsNullOrWhiteSpace(Model.Number))
-      {
-          <div><strong>@Model.Number</strong></div>
-      }
-      @if (!string.IsNullOrWhiteSpace(Model.Date))
-      {
-          <div>Date: @Model.Date</div>
-      }
-    </div>
+");
+        if (!string.IsNullOrWhiteSpace(invoice.Number))
+        {
+            sb.Append("      <div><strong>").Append(invoice.Number).Append("</strong></div>\n");
+        }
+        if (!string.IsNullOrWhiteSpace(invoice.Date))
+        {
+            sb.Append("      <div>Date: ").Append(invoice.Date).Append("</div>\n");
+        }
+        sb.Append(@"    </div>
   </div>
 
   <table>
@@ -103,28 +75,31 @@ th{background:#f6f6f6}
       </tr>
     </thead>
     <tbody>
-      @foreach (var line in Model.Lines)
-      {
-        <tr>
-          <td>@line.Description</td>
-          <td>@line.Qty</td>
-          <td>@line.Unit</td>
-          <td>@line.Total</td>
-        </tr>
-      }
-    </tbody>
+");
+        foreach (var item in invoice.Items)
+        {
+            var total = item.Total ?? item.UnitPrice * item.Quantity;
+            sb.Append("      <tr>\n");
+            sb.Append("        <td>").Append(item.Description).Append("</td>\n");
+            sb.Append("        <td>").Append(FormatQuantity(item.Quantity)).Append("</td>\n");
+            sb.Append("        <td>").Append(FormatMoney(currency, item.UnitPrice)).Append("</td>\n");
+            sb.Append("        <td>").Append(FormatMoney(currency, total)).Append("</td>\n");
+            sb.Append("      </tr>\n");
+        }
+        sb.Append(@"    </tbody>
   </table>
 
-  <div class=""total"">Subtotal: @Model.Subtotal</div>
-  @if (!string.IsNullOrWhiteSpace(Model.Notes))
-  {
-      <div class=""notes"">@Model.Notes</div>
-  }
-</div>
+  <div class=""total"">Subtotal: ").Append(FormatMoney(currency, subtotal)).Append(@"</div>
+");
+        if (!string.IsNullOrWhiteSpace(invoice.Notes))
+        {
+            sb.Append("  <div class=\"notes\">").Append(invoice.Notes).Append("</div>\n");
+        }
+        sb.Append(@"</div>
 </body>
-</html>";
+</html>");
 
-        return TemplateRenderer.RenderAsync("invoice", template, model);
+        return Task.FromResult(sb.ToString());
     }
 
     private static string FormatMoney(string currency, decimal value) =>
