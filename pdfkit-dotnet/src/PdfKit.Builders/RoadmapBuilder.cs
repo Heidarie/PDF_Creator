@@ -17,9 +17,12 @@ public static class RoadmapBuilder
     {
         var quarters = roadmap.Quarters?.Count > 0 ? roadmap.Quarters : new[] { "Q1", "Q2", "Q3", "Q4" };
         var lanes = roadmap.Lanes?.Select(lane => new RoadmapLaneView(
+        var lanes = roadmap.Lanes?.Select(lane => new RoadmapLaneView(
             lane.Label,
             lane.BarText,
             lane.WidthPercent,
+            string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
+        )).ToList() ?? new List<RoadmapLaneView>();
             string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
         )).ToList() ?? new List<RoadmapLaneView>();
 
