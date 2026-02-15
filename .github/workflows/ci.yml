@@ -31,5 +31,10 @@ jobs:
           cd pdfkit
           go test ./...
 
+      - name: Test .NET client/builders
+        run: |
+          cd pdfkit-dotnet
+          dotnet test
+
       - name: Integration tests (Docker)
         run: bash scripts/integration-test.sh
