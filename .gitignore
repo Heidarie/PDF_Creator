@@ -2,6 +2,9 @@
 .gomodcache/
 .golangci-cache/
 /bin/
+**/bin/
+**/obj/
+.vs/
 outputs/
 assets/
 *.pdf

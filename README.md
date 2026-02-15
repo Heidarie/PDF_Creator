@@ -82,3 +82,5 @@ Environment variables:
 ## Client Module
 
 There is a separate Go module with HTML builders and a client for this service in `pdfkit/`.
+
+There is also a .NET client + RazorLight builders in `pdfkit-dotnet/`.
