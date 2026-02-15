@@ -1,4 +1,5 @@
 using PdfKit.Builders;
+using Xunit;
 
 namespace PdfKit.Builders.Tests;
 
