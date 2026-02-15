@@ -45,6 +45,11 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPdfKitClient(this IServiceCollection services, string baseAddress)
     {
+        if (string.IsNullOrWhiteSpace(baseAddress))
+        {
+            throw new ArgumentException("Base address must be a non-empty absolute URL.", nameof(baseAddress));
+        }
+
         return services.AddPdfKitClient(options => options.BaseAddress = baseAddress);
     }
 }

@@ -9,19 +9,27 @@ public sealed record Poster(
     string? GradientTo
 );
 
+public sealed record PosterModel(
+    string Title,
+    string? Subtitle,
+    string? Location,
+    string? Date,
+    string GradientFrom,
+    string GradientTo
+);
+
 public static class PosterBuilder
 {
     public static Task<string> BuildAsync(Poster poster)
     {
-        var model = new
-        {
-            Title = string.IsNullOrWhiteSpace(poster.Title) ? "Event" : poster.Title,
+        var model = new PosterModel(
+            string.IsNullOrWhiteSpace(poster.Title) ? "Event" : poster.Title,
             poster.Subtitle,
             poster.Location,
             poster.Date,
-            GradientFrom = string.IsNullOrWhiteSpace(poster.GradientFrom) ? "#0ea5e9" : poster.GradientFrom,
-            GradientTo = string.IsNullOrWhiteSpace(poster.GradientTo) ? "#22c55e" : poster.GradientTo
-        };
+            string.IsNullOrWhiteSpace(poster.GradientFrom) ? "#0ea5e9" : poster.GradientFrom,
+            string.IsNullOrWhiteSpace(poster.GradientTo) ? "#22c55e" : poster.GradientTo
+        );
 
         const string template = @"<!doctype html>
 <html>

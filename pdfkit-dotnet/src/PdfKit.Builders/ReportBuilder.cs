@@ -12,19 +12,27 @@ public sealed record Report(
     string? AppendixHtml
 );
 
+public sealed record ReportModel(
+    string Title,
+    string Summary,
+    IReadOnlyList<KPI> KPIs,
+    IReadOnlyList<ReportPage> Pages,
+    string? AppendixTitle,
+    string AppendixHtml
+);
+
 public static class ReportBuilder
 {
     public static Task<string> BuildAsync(Report report)
     {
-        var model = new
-        {
-            Title = string.IsNullOrWhiteSpace(report.Title) ? "Report" : report.Title,
-            Summary = report.SummaryHtml ?? string.Empty,
-            KPIs = report.KPIs ?? Array.Empty<KPI>(),
-            Pages = report.Pages ?? Array.Empty<ReportPage>(),
-            AppendixTitle = report.AppendixTitle,
-            AppendixHtml = report.AppendixHtml ?? string.Empty
-        };
+        var model = new ReportModel(
+            string.IsNullOrWhiteSpace(report.Title) ? "Report" : report.Title,
+            report.SummaryHtml ?? string.Empty,
+            report.KPIs ?? Array.Empty<KPI>(),
+            report.Pages ?? Array.Empty<ReportPage>(),
+            report.AppendixTitle,
+            report.AppendixHtml ?? string.Empty
+        );
 
         const string template = @"<!doctype html>
 <html>

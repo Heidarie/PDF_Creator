@@ -2,6 +2,33 @@ namespace PdfKit.Builders;
 
 public sealed record Party(string Name, IReadOnlyList<string> Lines, string? Vat);
 
+public sealed record InvoiceLine(string Description, string Qty, string Unit, string Total);
+
+public sealed record DetailedInvoiceModel(
+    string? CompanyName,
+    string? CompanyTagline,
+    string? LogoDataUrl,
+    string? Number,
+    string? Date,
+    string? DueDate,
+    Party BillTo,
+    Party From,
+    IReadOnlyList<InvoiceLine> Lines,
+    string Subtotal,
+    string TaxLabel,
+    string TaxAmount,
+    string Total,
+    string Paid,
+    string Balance,
+    string? Notes,
+    string? Footer,
+    string SummaryTitle,
+    string SummaryHtml,
+    IReadOnlyList<string> Highlights,
+    bool ShowTax,
+    bool ShowPaid
+);
+
 public sealed record DetailedInvoice(
     string? CompanyName,
     string? CompanyTagline,
@@ -31,13 +58,12 @@ public static class DetailedInvoiceBuilder
         var lines = invoice.Items.Select(item =>
         {
             var total = item.Total ?? item.UnitPrice * item.Quantity;
-            return new
-            {
+            return new InvoiceLine(
                 item.Description,
-                Qty = InvoiceBuilderHelper.FormatQuantity(item.Quantity),
-                Unit = InvoiceBuilderHelper.FormatMoney(currency, item.UnitPrice),
-                Total = InvoiceBuilderHelper.FormatMoney(currency, total)
-            };
+                InvoiceBuilderHelper.FormatQuantity(item.Quantity),
+                InvoiceBuilderHelper.FormatMoney(currency, item.UnitPrice),
+                InvoiceBuilderHelper.FormatMoney(currency, total)
+            );
         }).ToList();
 
         var subtotal = invoice.Items.Sum(item => item.Total ?? item.UnitPrice * item.Quantity);
@@ -46,31 +72,30 @@ public static class DetailedInvoiceBuilder
         var totalAmount = subtotal + taxAmount;
         var balance = totalAmount - invoice.Paid;
 
-        var model = new
-        {
-            CompanyName = invoice.CompanyName,
-            CompanyTagline = invoice.CompanyTagline,
-            LogoDataUrl = invoice.LogoDataUrl,
+        var model = new DetailedInvoiceModel(
+            invoice.CompanyName,
+            invoice.CompanyTagline,
+            invoice.LogoDataUrl,
             invoice.Number,
             invoice.Date,
             invoice.DueDate,
-            BillTo = invoice.BillTo,
-            From = invoice.From,
-            Lines = lines,
-            Subtotal = InvoiceBuilderHelper.FormatMoney(currency, subtotal),
-            TaxLabel = string.IsNullOrWhiteSpace(invoice.TaxLabel) ? "Tax" : invoice.TaxLabel,
-            TaxAmount = InvoiceBuilderHelper.FormatMoney(currency, taxAmount),
-            Total = InvoiceBuilderHelper.FormatMoney(currency, totalAmount),
-            Paid = InvoiceBuilderHelper.FormatMoney(currency, invoice.Paid),
-            Balance = InvoiceBuilderHelper.FormatMoney(currency, balance),
-            Notes = invoice.Notes,
-            Footer = invoice.Footer,
-            SummaryTitle = string.IsNullOrWhiteSpace(invoice.SummaryTitle) ? "Work Summary" : invoice.SummaryTitle,
-            SummaryHtml = invoice.SummaryHtml ?? string.Empty,
-            Highlights = invoice.Highlights ?? Array.Empty<string>(),
-            ShowTax = taxRate > 0,
-            ShowPaid = invoice.Paid > 0
-        };
+            invoice.BillTo,
+            invoice.From,
+            lines,
+            InvoiceBuilderHelper.FormatMoney(currency, subtotal),
+            string.IsNullOrWhiteSpace(invoice.TaxLabel) ? "Tax" : invoice.TaxLabel,
+            InvoiceBuilderHelper.FormatMoney(currency, taxAmount),
+            InvoiceBuilderHelper.FormatMoney(currency, totalAmount),
+            InvoiceBuilderHelper.FormatMoney(currency, invoice.Paid),
+            InvoiceBuilderHelper.FormatMoney(currency, balance),
+            invoice.Notes,
+            invoice.Footer,
+            string.IsNullOrWhiteSpace(invoice.SummaryTitle) ? "Work Summary" : invoice.SummaryTitle,
+            invoice.SummaryHtml ?? string.Empty,
+            invoice.Highlights ?? Array.Empty<string>(),
+            taxRate > 0,
+            invoice.Paid > 0
+        );
 
         const string template = @"<!doctype html>
 <html>

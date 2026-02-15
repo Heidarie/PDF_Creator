@@ -2,16 +2,17 @@ namespace PdfKit.Builders;
 
 public sealed record BasicDocument(string? Title, string BodyHtml);
 
+public sealed record BasicDocumentModel(string? Title, string Body);
+
 public static class BasicBuilder
 {
     public static Task<string> BuildAsync(BasicDocument doc)
     {
         var body = string.IsNullOrWhiteSpace(doc.BodyHtml) ? "<p>Empty document</p>" : doc.BodyHtml;
-        var model = new
-        {
-            Title = doc.Title,
-            Body = body
-        };
+        var model = new BasicDocumentModel(
+            doc.Title,
+            body
+        );
 
         const string template = @"<!doctype html>
 <html>

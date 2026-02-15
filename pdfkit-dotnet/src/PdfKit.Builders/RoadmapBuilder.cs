@@ -3,25 +3,31 @@ namespace PdfKit.Builders;
 public sealed record RoadmapLane(string Label, string BarText, int WidthPercent, string? Color);
 public sealed record Roadmap(string? Title, IReadOnlyList<string> Quarters, IReadOnlyList<RoadmapLane> Lanes);
 
+public sealed record RoadmapLaneView(string Label, string BarText, int WidthPercent, string Color);
+
+public sealed record RoadmapModel(
+    string Title,
+    IReadOnlyList<string> Quarters,
+    IReadOnlyList<RoadmapLaneView> Lanes
+);
+
 public static class RoadmapBuilder
 {
     public static Task<string> BuildAsync(Roadmap roadmap)
     {
         var quarters = roadmap.Quarters?.Count > 0 ? roadmap.Quarters : new[] { "Q1", "Q2", "Q3", "Q4" };
-        var lanes = roadmap.Lanes?.Select(lane => new
-        {
+        var lanes = roadmap.Lanes?.Select(lane => new RoadmapLaneView(
             lane.Label,
             lane.BarText,
             lane.WidthPercent,
-            Color = string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
-        }).ToList() ?? new List<object>();
+            string.IsNullOrWhiteSpace(lane.Color) ? "#3b82f6" : lane.Color
+        )).ToList() ?? new List<RoadmapLaneView>();
 
-        var model = new
-        {
-            Title = string.IsNullOrWhiteSpace(roadmap.Title) ? "Product Roadmap" : roadmap.Title,
-            Quarters = quarters,
-            Lanes = lanes
-        };
+        var model = new RoadmapModel(
+            string.IsNullOrWhiteSpace(roadmap.Title) ? "Product Roadmap" : roadmap.Title,
+            quarters,
+            lanes
+        );
 
         const string template = @"<!doctype html>
 <html>

@@ -14,6 +14,18 @@ public sealed record Invoice(
     string? Notes
 );
 
+public sealed record SimpleInvoiceLine(string Description, string Qty, string Unit, string Total);
+
+public sealed record InvoiceModel(
+    string Title,
+    string? Number,
+    string? Date,
+    string? Customer,
+    string? Notes,
+    IReadOnlyList<SimpleInvoiceLine> Lines,
+    string Subtotal
+);
+
 public static class InvoiceBuilder
 {
     public static Task<string> BuildAsync(Invoice invoice)
@@ -22,27 +34,25 @@ public static class InvoiceBuilder
         var lines = invoice.Items.Select(item =>
         {
             var total = item.Total ?? item.UnitPrice * item.Quantity;
-            return new
-            {
+            return new SimpleInvoiceLine(
                 item.Description,
-                Qty = FormatQuantity(item.Quantity),
-                Unit = FormatMoney(currency, item.UnitPrice),
-                Total = FormatMoney(currency, total)
-            };
+                FormatQuantity(item.Quantity),
+                FormatMoney(currency, item.UnitPrice),
+                FormatMoney(currency, total)
+            );
         }).ToList();
 
         var subtotal = invoice.Items.Sum(item => item.Total ?? item.UnitPrice * item.Quantity);
 
-        var model = new
-        {
-            Title = string.IsNullOrWhiteSpace(invoice.Title) ? "Invoice" : invoice.Title,
+        var model = new InvoiceModel(
+            string.IsNullOrWhiteSpace(invoice.Title) ? "Invoice" : invoice.Title,
             invoice.Number,
             invoice.Date,
             invoice.Customer,
-            Notes = invoice.Notes,
-            Lines = lines,
-            Subtotal = FormatMoney(currency, subtotal)
-        };
+            invoice.Notes,
+            lines,
+            FormatMoney(currency, subtotal)
+        );
 
         const string template = @"<!doctype html>
 <html>
