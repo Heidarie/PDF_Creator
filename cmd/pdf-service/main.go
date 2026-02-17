@@ -35,6 +35,11 @@ type config struct {
 	chromeNoSandbox bool
 }
 
+type renderer interface {
+	ValidateAndNormalize(render.Request) (render.Job, error)
+	Render(context.Context, render.Job) ([]byte, error)
+}
+
 func main() {
 	cfg := loadConfig()
 
@@ -89,7 +94,7 @@ func main() {
 }
 
 type renderHandler struct {
-	renderer     *render.Renderer
+	renderer     renderer
 	maxBodyBytes int64
 }
 

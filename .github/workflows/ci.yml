@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Test main service
+        run: go test ./...
+
+      - name: Lint main service
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.56.2
+          args: --timeout=5m ./...
+
+      - name: Test pdfkit module
+        run: |
+          cd pdfkit
+          go test ./...
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Test .NET client/builders
+        run: |
+          dotnet test pdfkit-dotnet/tests/PdfKit.Client.Tests/PdfKit.Client.Tests.csproj
+          dotnet test pdfkit-dotnet/tests/PdfKit.Builders.Tests/PdfKit.Builders.Tests.csproj
+
+      - name: Integration tests (Docker)
+        run: bash scripts/integration-test.sh
