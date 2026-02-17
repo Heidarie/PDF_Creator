@@ -1,19 +1,41 @@
-# PDF Creator Service
+# PDFactory
 
-A tiny Go microservice that renders a PDF from HTML sent over a JSON API. The service exposes a single external endpoint: `POST /render`.
+PDFactory is a lightweight microservice that renders PDFs from HTML sent in JSON. It exposes a single external endpoint and is designed to be container‑first and SSRF‑safe.
+
+## Highlights
+
+- Single `POST /render` endpoint
+- Headless Chromium rendering (Docker ready)
+- SSRF‑safe: blocks external network requests from HTML
+- Strict input validation and size limits
+- Go client + HTML builders (`pdfkit/`)
+- .NET client + RazorLight builders (`pdfkit-dotnet/`)
+
+## Quickstart (Docker)
+
+```bash
+docker build -t pdfactory .
+
+docker run --rm -p 8080:8080 pdfactory
+```
+
+Test it:
+
+```bash
+curl -X POST http://localhost:8080/render \
+  -H 'Content-Type: application/json' \
+  -d '{"html":"<h1>Hello</h1><p>PDF from PDFactory</p>","name":"hello","size":"A4"}' \
+  --output hello.pdf
+```
 
 ## API
 
-**Request**
-
 `POST /render` with `Content-Type: application/json`
-
-OpenAPI spec: `openapi.yaml` (single external endpoint: `/render`).
 
 ```json
 {
-  "html": "<h1>Invoice</h1><p>Total: $42</p>",
-  "name": "invoice-42",
+  "html": "<h1>Hello</h1><p>PDF from PDFactory</p>",
+  "name": "hello",
   "size": "A4",
   "orientation": "portrait",
   "margin": {
@@ -25,46 +47,21 @@ OpenAPI spec: `openapi.yaml` (single external endpoint: `/render`).
 }
 ```
 
-**Response**
+Response:
 
 - `200 OK` with `application/pdf` body
 - `400/415/405` for invalid input
 
-**Supported sizes**: `A3`, `A4`, `A5`, `Letter`, `Legal` (case-insensitive).
+Supported sizes (case‑insensitive): `A3`, `A4`, `A5`, `Letter`, `Legal`
 
-**Margins** are inches. If omitted, a default of `0.4` in is used.
+Margins are inches. Defaults to `0.4` if omitted.
 
-## Run Locally
-
-```bash
-go run ./cmd/pdf-service
-```
-
-```bash
-curl -X POST http://localhost:8080/render \
-  -H 'Content-Type: application/json' \
-  -d '{"html":"<h1>Hello</h1>","name":"hello","size":"A4"}' \
-  --output hello.pdf
-```
-
-## Docker
-
-```bash
-docker build -t pdf-service .
-
-docker run --rm -p 8080:8080 pdf-service
-```
-
-## Docker Compose
-
-```bash
-docker compose up --build
-```
+OpenAPI spec: `openapi.yaml` (single external endpoint: `/render`).
 
 ## Security Notes
 
-- The renderer blocks all external network requests (`http`, `https`, `file`, `ws`, etc.), preventing SSRF-style access from untrusted HTML.
-- Because of this, external images/fonts won't load. Use inline styles or `data:` URLs if you need assets.
+- External requests are blocked (`http`, `https`, `file`, `ws`, etc.) to prevent SSRF.
+- Use inline CSS and `data:` URLs for images/fonts.
 - Request body size, HTML length, and concurrency are bounded.
 
 ## Configuration
@@ -78,3 +75,61 @@ Environment variables:
 - `RENDER_TIMEOUT` (default `20s`)
 - `CHROME_PATH` (default `/usr/bin/chromium` inside Docker)
 - `CHROME_NO_SANDBOX` (default `false`) — set to `true` only if Chromium fails to start in your container
+
+## Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Optional Redis profile:
+
+```bash
+docker compose --profile infra up --build
+```
+
+## Clients
+
+Go client + builders:
+
+- `pdfkit/`
+
+.NET client + RazorLight builders:
+
+- `pdfkit-dotnet/`
+
+## Testing
+
+Go tests:
+
+```bash
+go test ./...
+```
+
+Go client tests:
+
+```bash
+cd pdfkit
+go test ./...
+```
+
+Integration tests (Docker):
+
+```bash
+bash scripts/integration-test.sh
+```
+
+.NET tests:
+
+```bash
+cd pdfkit-dotnet
+dotnet test
+```
+
+## Project Layout
+
+- `cmd/pdf-service/` — HTTP server
+- `internal/render/` — Chromium rendering + validation
+- `pdfkit/` — Go client + HTML builders
+- `pdfkit-dotnet/` — .NET client + RazorLight builders
+- `scripts/` — CI and integration scripts

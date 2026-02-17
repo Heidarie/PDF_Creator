@@ -1,4 +1,4 @@
-module pdf_creator
+module pdfactory
 
 go 1.22
 

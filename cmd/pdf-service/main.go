@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"pdf_creator/internal/render"
+	"pdfactory/internal/render"
 )
 
 const (
