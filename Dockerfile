@@ -2,7 +2,7 @@ FROM golang:1.22 AS builder
 WORKDIR /src
 COPY go.mod ./
 COPY . .
-RUN CGO_ENABLED=0 go build -o /out/pdfactory ./cmd/pdf-service
+RUN CGO_ENABLED=0 go build -o /out/pdfactory ./cmd/pdfactory
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \

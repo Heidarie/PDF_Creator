@@ -26,9 +26,9 @@ jobs:
           version: v1.56.2
           args: --timeout=5m ./...
 
-      - name: Test pdfkit module
+      - name: Test pdfactory-go module
         run: |
-          cd pdfkit
+          cd pdfactory-go
           go test ./...
 
       - name: Set up .NET
@@ -40,8 +40,8 @@ jobs:
 
       - name: Test .NET client/builders
         run: |
-          dotnet test pdfkit-dotnet/tests/PdfKit.Client.Tests/PdfKit.Client.Tests.csproj
-          dotnet test pdfkit-dotnet/tests/PdfKit.Builders.Tests/PdfKit.Builders.Tests.csproj
+          dotnet test pdfactory-dotnet/tests/PdfFactory.Client.Tests/PdfFactory.Client.Tests.csproj
+          dotnet test pdfactory-dotnet/tests/PdfFactory.Builders.Tests/PdfFactory.Builders.Tests.csproj
 
       - name: Integration tests (Docker)
         run: bash scripts/integration-test.sh

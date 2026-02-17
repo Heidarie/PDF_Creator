@@ -8,8 +8,8 @@ PDFactory is a lightweight microservice that renders PDFs from HTML sent in JSON
 - Headless Chromium rendering (Docker ready)
 - SSRF‑safe: blocks external network requests from HTML
 - Strict input validation and size limits
-- Go client + HTML builders (`pdfkit/`)
-- .NET client + RazorLight builders (`pdfkit-dotnet/`)
+- Go client + HTML builders (`pdfactory-go/`)
+- .NET client + RazorLight builders (`pdfactory-dotnet/`)
 
 ## Quickstart (Docker)
 
@@ -92,11 +92,11 @@ docker compose --profile infra up --build
 
 Go client + builders:
 
-- `pdfkit/`
+- `pdfactory-go/`
 
 .NET client + RazorLight builders:
 
-- `pdfkit-dotnet/`
+- `pdfactory-dotnet/`
 
 ## Testing
 
@@ -109,7 +109,7 @@ go test ./...
 Go client tests:
 
 ```bash
-cd pdfkit
+cd pdfactory-go
 go test ./...
 ```
 
@@ -122,14 +122,14 @@ bash scripts/integration-test.sh
 .NET tests:
 
 ```bash
-cd pdfkit-dotnet
+cd pdfactory-dotnet
 dotnet test
 ```
 
 ## Project Layout
 
-- `cmd/pdf-service/` — HTTP server
+- `cmd/pdfactory/` — HTTP server
 - `internal/render/` — Chromium rendering + validation
-- `pdfkit/` — Go client + HTML builders
-- `pdfkit-dotnet/` — .NET client + RazorLight builders
+- `pdfactory-go/` — Go client + HTML builders
+- `pdfactory-dotnet/` — .NET client + RazorLight builders
 - `scripts/` — CI and integration scripts
