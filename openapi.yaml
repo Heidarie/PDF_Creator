@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: PDF Creator Service
+  title: PDFactory Service
   version: 1.0.0
   description: |-
     A single-endpoint service that renders PDFs from HTML sent in JSON.

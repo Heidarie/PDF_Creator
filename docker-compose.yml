@@ -1,7 +1,7 @@
 services:
-  pdf-service:
+  pdfactory:
     build: .
-    image: pdf-service:local
+    image: pdfactory:local
     ports:
       - "8080:8080"
     environment:

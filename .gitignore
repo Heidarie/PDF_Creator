@@ -9,5 +9,5 @@ outputs/
 assets/
 *.pdf
 .DS_Store
-/pdfkit-dotnet/.idea
-pdfkit-dotnet/Folder.DotSettings.user
+/pdfactory-dotnet/.idea
+pdfactory-dotnet/Folder.DotSettings.user
